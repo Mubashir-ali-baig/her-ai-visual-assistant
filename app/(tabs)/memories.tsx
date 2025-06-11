@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-import {
-  StyleSheet,
-  View,
-  ActivityIndicator,
-  Text,
-  RefreshControl,
-} from "react-native";
+import { ActivityIndicator, StyleSheet } from "react-native";
 import MemoryTimeline from "../../components/MemoryTimeline";
+import { ThemedText } from "../../components/ThemedText";
+import { ThemedView } from "../../components/ThemedView";
 import { useAuth } from "../../contexts/AuthContext";
+import { useThemeContext } from "../../contexts/ThemeContext";
 import { getMemories } from "../../services/supabase";
 
 type Memory = {
@@ -20,6 +17,7 @@ type Memory = {
 
 export default function MemoriesScreen() {
   const { user } = useAuth();
+  const { currentTheme } = useThemeContext();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -50,28 +48,28 @@ export default function MemoriesScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <ThemedView style={styles.container}>
         <ActivityIndicator size="large" color="#007AFF" />
-      </View>
+      </ThemedView>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.container}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
+      <ThemedView style={styles.container}>
+        <ThemedText style={styles.errorText}>{error}</ThemedText>
+      </ThemedView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ThemedView style={styles.container}>
       <MemoryTimeline
         memories={memories}
         onRefresh={onRefresh}
         refreshing={refreshing}
       />
-    </View>
+    </ThemedView>
   );
 }
 

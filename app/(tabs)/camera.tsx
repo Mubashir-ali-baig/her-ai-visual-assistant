@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View, Alert } from "react-native";
+import { Alert, StyleSheet, View } from "react-native";
 import CameraViewComponent from "../../components/CameraView";
 import { useAuth } from "../../contexts/AuthContext";
 import { saveMemory } from "../../services/supabase";
@@ -29,7 +29,6 @@ export default function CameraScreen() {
         memory.image_uri
       );
       if (error) throw error;
-      Alert.alert("Success", "Memory saved successfully!");
     } catch (error: any) {
       Alert.alert("Error", error.message);
     }

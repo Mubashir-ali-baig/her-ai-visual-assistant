@@ -1,26 +1,25 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
+import { Audio } from "expo-av";
+import { CameraView, useCameraPermissions } from "expo-camera";
+import * as FileSystem from "expo-file-system";
+import * as Haptics from "expo-haptics";
+import * as Speech from "expo-speech";
+import * as VideoThumbnails from "expo-video-thumbnails";
 import React, { useRef, useState } from "react";
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   Modal,
-  ScrollView,
   Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { CameraView, useCameraPermissions } from "expo-camera";
-import * as Speech from "expo-speech";
-import * as FileSystem from "expo-file-system";
-import { LLMService } from "../../services/llmService";
-import * as VideoThumbnails from "expo-video-thumbnails";
-import { Video, Audio } from "expo-av";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { uploadVideoToSupabase, saveMemory } from "../../services/supabase";
 import { useAuth } from "../../contexts/AuthContext";
-import { Ionicons } from "@expo/vector-icons";
-import * as Haptics from "expo-haptics";
-import { useIsFocused } from "@react-navigation/native";
+import { LLMService } from "../../services/llmService";
+import { saveMemory, uploadVideoToSupabase } from "../../services/supabase";
 
 export default function VideoScreen() {
   const { user } = useAuth();
@@ -33,6 +32,9 @@ export default function VideoScreen() {
   const cameraRef = useRef<any>(null);
   const isFocused = useIsFocused();
   const isWeb = Platform.OS === "web";
+  const [uploading, setUploading] = useState(false);
+  const [narrating, setNarrating] = useState(false);
+  const [analysing, setAnalysing] = useState(false);
 
   const switchCamera = () => {
     setFacing((prev) => (prev === "back" ? "front" : "back"));
@@ -99,18 +101,29 @@ export default function VideoScreen() {
   };
 
   const handleVideoAnalysis = async (videoUri: string) => {
+    setUploading(true);
     setIsLoading(true);
     try {
-      console.log("[Video] Extracting frames for LLM analysis...");
+      setUploading(false);
+      setAnalysing(true);
       const frames = await extractFramesAsBase64(videoUri, frameCount);
       if (frames.length === 0)
         throw new Error("No frames extracted from video");
       const response = await LLMService.getInstance().analyzeVideoFrames(
         frames
       );
-      // Narrate the LLM's response
-      Speech.speak(response.commentary, { rate: 1.0 });
-
+      setAnalysing(false);
+      setNarrating(true);
+      await new Promise((resolve, reject) => {
+        Speech.speak(response.commentary, {
+          rate: 1.0,
+          onDone: resolve,
+          onStopped: resolve,
+          onError: reject,
+        });
+      });
+      setNarrating(false);
+      setUploading(true);
       // Upload video and save memory
       if (user && videoUri) {
         const videoUrl = await uploadVideoToSupabase(videoUri, user.id);
@@ -121,9 +134,12 @@ export default function VideoScreen() {
           videoUrl,
           response.source || "OpenAI"
         );
-        alert("Video memory saved successfully!");
       }
+      setUploading(false);
     } catch (e) {
+      setUploading(false);
+      setNarrating(false);
+      setAnalysing(false);
       console.error("Video LLM error:", e);
       let errorMessage = "";
       if (e instanceof Error) {
@@ -167,6 +183,20 @@ export default function VideoScreen() {
 
   return (
     <View style={styles.container}>
+      {(uploading || narrating || analysing) && (
+        <View style={styles.overlay}>
+          <ActivityIndicator size="large" color="#007AFF" />
+          <Text style={styles.statusText}>
+            {analysing
+              ? "Analysing moment..."
+              : narrating
+              ? "Speaking..."
+              : uploading
+              ? "Uploading..."
+              : ""}
+          </Text>
+        </View>
+      )}
       {isWeb ? (
         <Text>Camera is not supported on web.</Text>
       ) : (
@@ -215,7 +245,6 @@ export default function VideoScreen() {
       >
         <Text style={styles.frameCountText}>{frameCount} Frames</Text>
       </TouchableOpacity>
-      {isLoading && <ActivityIndicator style={styles.loadingIndicator} />}
       <Modal
         visible={showFrameCountModal}
         transparent
@@ -325,5 +354,18 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     maxHeight: 200, // Adjust as needed
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
+  },
+  statusText: {
+    color: "white",
+    fontSize: 18,
+    marginTop: 16,
+    fontWeight: "bold",
   },
 });

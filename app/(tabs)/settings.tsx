@@ -1,131 +1,187 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, Switch, StyleSheet, TouchableOpacity } from "react-native";
-import Slider from "@react-native-community/slider";
-import * as Speech from "expo-speech";
-import { Picker } from "@react-native-picker/picker";
+import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Slider from "@react-native-community/slider";
+import { useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
+import { Alert, ScrollView, StyleSheet, TouchableOpacity } from "react-native";
+import { ThemedText } from "../../components/ThemedText";
+import { ThemedView } from "../../components/ThemedView";
 import { useAuth } from "../../contexts/AuthContext";
-import { router } from "expo-router";
+import { useThemeContext } from "../../contexts/ThemeContext";
 
 const VOICE_KEY = "@her_selected_voice";
 const FRAME_COUNT_KEY = "@her_video_frame_count";
 
+type ThemeMode = "light" | "dark" | "system";
+
 export default function SettingsScreen() {
-  const [isEnabled, setIsEnabled] = useState(false);
-  const [sliderValue, setSliderValue] = useState(50);
-  const [voices, setVoices] = useState<any[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<string | undefined>(
-    undefined
-  );
-  const [frameCount, setFrameCount] = useState(3);
   const { signOut } = useAuth();
+  const { themeMode, setThemeMode, currentTheme } = useThemeContext();
+  const [selectedVoice, setSelectedVoice] = useState("en-US");
+  const [frameCount, setFrameCount] = useState(3);
+  const router = useRouter();
 
   useEffect(() => {
-    (async () => {
-      const availableVoices = await Speech.getAvailableVoicesAsync();
-      setVoices(availableVoices);
-      if (availableVoices.length > 0) {
-        setSelectedVoice(availableVoices[0].identifier);
+    AsyncStorage.getItem("theme-mode").then((savedTheme) => {
+      if (savedTheme) {
+        setThemeMode(savedTheme as ThemeMode);
       }
-      // Load frame count from storage
-      const storedFrameCount = await AsyncStorage.getItem(FRAME_COUNT_KEY);
-      if (storedFrameCount) setFrameCount(Number(storedFrameCount));
-    })();
+    });
+    AsyncStorage.getItem(VOICE_KEY).then((savedVoice) => {
+      if (savedVoice) {
+        setSelectedVoice(savedVoice);
+      }
+    });
+    AsyncStorage.getItem(FRAME_COUNT_KEY).then((savedFrameCount) => {
+      if (savedFrameCount) {
+        setFrameCount(parseInt(savedFrameCount));
+      }
+    });
   }, []);
 
-  useEffect(() => {
-    if (selectedVoice) {
-      AsyncStorage.setItem(VOICE_KEY, selectedVoice);
-    }
-    AsyncStorage.setItem(FRAME_COUNT_KEY, String(frameCount));
-  }, [selectedVoice, frameCount]);
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.replace("/(auth)/login");
+  const handleThemeChange = (newTheme: ThemeMode) => {
+    setThemeMode(newTheme);
   };
 
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      Alert.alert("Error", "Failed to sign out");
+    }
+  };
+
+  // Theme-aware border color
+  const borderColor = currentTheme === "dark" ? "#333" : "#eee";
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Settings</Text>
-      <View style={styles.settingRow}>
-        <Text>Enable Notifications</Text>
-        <Switch value={isEnabled} onValueChange={setIsEnabled} />
-      </View>
-      <View style={styles.settingRow}>
-        <Text>Volume</Text>
-        <Slider
-          style={{ width: 150 }}
-          minimumValue={0}
-          maximumValue={100}
-          value={sliderValue}
-          onValueChange={setSliderValue}
-        />
-        <Text>{sliderValue}</Text>
-      </View>
-      <View style={styles.settingRow}>
-        <Text>Voice</Text>
-        <Picker
-          selectedValue={selectedVoice}
-          style={{ width: 180 }}
-          onValueChange={(itemValue) => setSelectedVoice(itemValue)}
+    <ScrollView style={styles.scrollView}>
+      <ThemedView style={styles.container}>
+        <ThemedText type="title" style={styles.header}>
+          Settings
+        </ThemedText>
+
+        <ThemedView
+          style={[styles.section, { borderBottomColor: borderColor }]}
         >
-          {voices.map((voice) => (
-            <Picker.Item
-              key={voice.identifier}
-              label={voice.name || voice.identifier}
-              value={voice.identifier}
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Appearance
+          </ThemedText>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => handleThemeChange("light")}
+          >
+            <ThemedText>Light Theme</ThemedText>
+            {themeMode === "light" && (
+              <Ionicons name="checkmark" size={24} color="#0a7ea4" />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => handleThemeChange("dark")}
+          >
+            <ThemedText>Dark Theme</ThemedText>
+            {themeMode === "dark" && (
+              <Ionicons name="checkmark" size={24} color="#0a7ea4" />
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.settingRow}
+            onPress={() => handleThemeChange("system")}
+          >
+            <ThemedText>System Default</ThemedText>
+            {themeMode === "system" && (
+              <Ionicons name="checkmark" size={24} color="#0a7ea4" />
+            )}
+          </TouchableOpacity>
+        </ThemedView>
+
+        <ThemedView
+          style={[styles.section, { borderBottomColor: borderColor }]}
+        >
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Voice Settings
+          </ThemedText>
+          <ThemedView style={styles.settingRow}>
+            <ThemedText>Voice Speed</ThemedText>
+            <Slider
+              style={styles.slider}
+              minimumValue={0.5}
+              maximumValue={2}
+              value={1}
+              minimumTrackTintColor="#0a7ea4"
+              maximumTrackTintColor="#000000"
             />
-          ))}
-        </Picker>
-      </View>
-      <View style={styles.settingRow}>
-        <Text>Video Analysis Frame Count</Text>
-        <Slider
-          style={{ width: 150 }}
-          minimumValue={3}
-          maximumValue={10}
-          step={1}
-          value={frameCount}
-          onValueChange={setFrameCount}
-        />
-        <Text>{frameCount}</Text>
-      </View>
-      <Text style={styles.note}>More settings coming soon...</Text>
-      <TouchableOpacity style={styles.button} onPress={handleSignOut}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-    </View>
+          </ThemedView>
+        </ThemedView>
+
+        <ThemedView
+          style={[styles.section, { borderBottomColor: borderColor }]}
+        >
+          <ThemedText type="subtitle" style={styles.sectionTitle}>
+            Video Settings
+          </ThemedText>
+          <ThemedView style={styles.settingRow}>
+            <ThemedText>Frame Count: {frameCount}</ThemedText>
+            <Slider
+              style={styles.slider}
+              minimumValue={1}
+              maximumValue={10}
+              step={1}
+              value={frameCount}
+              onValueChange={setFrameCount}
+              minimumTrackTintColor="#0a7ea4"
+              maximumTrackTintColor="#000000"
+            />
+          </ThemedView>
+        </ThemedView>
+
+        <TouchableOpacity style={styles.button} onPress={handleSignOut}>
+          <ThemedText style={styles.buttonText}>Sign Out</ThemedText>
+        </TouchableOpacity>
+      </ThemedView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scrollView: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     padding: 24,
-    backgroundColor: "#f5f5f5",
   },
   header: {
-    fontSize: 22,
-    fontWeight: "bold",
     marginBottom: 24,
+  },
+  section: {
+    marginBottom: 32,
+  },
+  sectionTitle: {
+    marginBottom: 16,
   },
   settingRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 24,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
   },
-  note: {
-    marginTop: 32,
-    color: "#888",
-    fontStyle: "italic",
+  slider: {
+    width: 200,
+    height: 40,
   },
   button: {
     backgroundColor: "#FF3B30",
     padding: 15,
     borderRadius: 10,
     marginTop: 30,
+    marginBottom: 40,
   },
   buttonText: {
     color: "#fff",

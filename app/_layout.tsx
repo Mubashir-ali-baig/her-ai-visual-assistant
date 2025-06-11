@@ -1,23 +1,22 @@
+import { FontAwesome } from "@expo/vector-icons";
 import {
   DarkTheme,
   DefaultTheme,
-  ThemeProvider,
+  ThemeProvider as NavigationThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, Tabs } from "expo-router";
+import { router, Stack, Tabs, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import "react-native-reanimated";
-import { FontAwesome } from "@expo/vector-icons";
-import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { useEffect } from "react";
-import { router, useSegments } from "expo-router";
-
-import { useColorScheme } from "@/hooks/useColorScheme";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import "react-native-reanimated";
+import { AuthProvider, useAuth } from "../contexts/AuthContext";
+import { ThemeProvider, useThemeContext } from "../contexts/ThemeContext";
 
 function RootLayoutNav() {
   const { user, loading } = useAuth();
   const segments = useSegments();
-  const colorScheme = useColorScheme();
+  const { currentTheme } = useThemeContext();
 
   useEffect(() => {
     if (loading) return;
@@ -25,10 +24,8 @@ function RootLayoutNav() {
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!user && !inAuthGroup) {
-      // Redirect to login if not authenticated
       router.replace("/(auth)/login");
     } else if (user && inAuthGroup) {
-      // Redirect to home if authenticated and trying to access auth screens
       router.replace("/(tabs)");
     }
   }, [user, loading, segments]);
@@ -38,14 +35,16 @@ function RootLayoutNav() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+    <NavigationThemeProvider
+      value={currentTheme === "dark" ? DarkTheme : DefaultTheme}
+    >
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/login" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)/register" options={{ headerShown: false }} />
       </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+      <StatusBar style={currentTheme === "dark" ? "light" : "dark"} />
+    </NavigationThemeProvider>
   );
 }
 
@@ -59,25 +58,25 @@ export default function RootLayout() {
   }
 
   return (
-    <AuthProvider>
-      <RootLayoutNav />
-    </AuthProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          <RootLayoutNav />
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 
 export function AppLayout() {
+  const { currentTheme } = useThemeContext();
+
   return (
-    <Tabs>
-      <Tabs.Screen
-        name="index"
-        options={{
-          href: null,
-        }}
-      />
+    <Tabs key={currentTheme}>
       <Tabs.Screen
         name="camera"
         options={{
-          title: "Camera",
+          title: "",
           tabBarIcon: ({ color }) => (
             <FontAwesome name="camera" size={24} color={color} />
           ),
@@ -86,7 +85,7 @@ export function AppLayout() {
       <Tabs.Screen
         name="video"
         options={{
-          title: "Video",
+          title: "",
           tabBarIcon: ({ color }) => (
             <FontAwesome name="video-camera" size={24} color={color} />
           ),
@@ -95,17 +94,16 @@ export function AppLayout() {
       <Tabs.Screen
         name="memories"
         options={{
-          title: "Memories",
+          title: "",
           tabBarIcon: ({ color }) => (
             <FontAwesome name="history" size={24} color={color} />
           ),
         }}
       />
-
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Settings",
+          title: "",
           tabBarIcon: ({ color }) => (
             <FontAwesome name="cog" size={24} color={color} />
           ),

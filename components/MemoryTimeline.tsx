@@ -1,13 +1,9 @@
+import { ResizeMode, Video } from "expo-av";
 import React from "react";
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  Image,
-  RefreshControl,
-} from "react-native";
-import { Video, ResizeMode } from "expo-av";
+import { FlatList, Image, RefreshControl, StyleSheet } from "react-native";
+import { useThemeContext } from "../contexts/ThemeContext";
+import { ThemedText } from "./ThemedText";
+import { ThemedView } from "./ThemedView";
 
 type Memory = {
   id: string;
@@ -29,8 +25,15 @@ export default function MemoryTimeline({
   onRefresh,
   refreshing,
 }: MemoryTimelineProps) {
+  const { currentTheme } = useThemeContext();
+  const cardBg = currentTheme === "dark" ? "#23272a" : "#fff";
+  const timelineBg = currentTheme === "dark" ? "#181a1b" : "#f5f5f5";
+  const headerColor = currentTheme === "dark" ? "#ECEDEE" : "#333";
+  const dateColor = currentTheme === "dark" ? "#aaa" : "#888";
+  const commentaryColor = currentTheme === "dark" ? "#ECEDEE" : "#222";
+
   const renderMemory = ({ item }: { item: Memory }) => (
-    <View style={styles.memoryCard}>
+    <ThemedView style={[styles.memoryCard, { backgroundColor: cardBg }]}>
       {item.video_uri ? (
         <Video
           source={{ uri: item.video_uri }}
@@ -42,18 +45,26 @@ export default function MemoryTimeline({
       ) : item.image_uri ? (
         <Image source={{ uri: item.image_uri }} style={styles.memoryImage} />
       ) : null}
-      <View style={styles.memoryContent}>
-        <Text style={styles.memoryDate}>
+      <ThemedView style={styles.memoryContent}>
+        <ThemedText style={[styles.memoryDate, { color: dateColor }]}>
           {new Date(item.created_at).toLocaleString()}
-        </Text>
-        <Text style={styles.memoryCommentary}>{item.commentary}</Text>
-      </View>
-    </View>
+        </ThemedText>
+        <ThemedText
+          style={[styles.memoryCommentary, { color: commentaryColor }]}
+        >
+          {item.commentary}
+        </ThemedText>
+      </ThemedView>
+    </ThemedView>
   );
 
   return (
-    <View style={styles.timelineContainer}>
-      <Text style={styles.timelineHeader}>Memories Timeline</Text>
+    <ThemedView
+      style={[styles.timelineContainer, { backgroundColor: timelineBg }]}
+    >
+      <ThemedText style={[styles.timelineHeader, { color: headerColor }]}>
+        Memories Timeline
+      </ThemedText>
       <FlatList
         data={memories}
         renderItem={renderMemory}
@@ -64,14 +75,13 @@ export default function MemoryTimeline({
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       />
-    </View>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   timelineContainer: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
     paddingTop: 16,
   },
   timelineHeader: {
@@ -79,14 +89,12 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 16,
-    color: "#333",
   },
   listContent: {
     padding: 16,
     paddingBottom: 32,
   },
   memoryCard: {
-    backgroundColor: "white",
     borderRadius: 16,
     marginBottom: 24,
     overflow: "hidden",
@@ -108,13 +116,11 @@ const styles = StyleSheet.create({
   },
   memoryDate: {
     fontSize: 13,
-    color: "#888",
     marginBottom: 8,
     fontStyle: "italic",
   },
   memoryCommentary: {
     fontSize: 17,
-    color: "#222",
     lineHeight: 25,
   },
 });
