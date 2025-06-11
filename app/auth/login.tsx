@@ -1,14 +1,14 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
+  Alert,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  Text,
-  StyleSheet,
-  Alert,
+  View,
 } from "react-native";
 import { useAuth } from "../../contexts/AuthContext";
-import { router } from "expo-router";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
@@ -18,7 +18,7 @@ export default function LoginScreen() {
   const handleLogin = async () => {
     try {
       await signIn(email, password);
-      router.replace("/(tabs)");
+      router.replace("/");
     } catch (error) {
       Alert.alert("Error", error.message);
     }

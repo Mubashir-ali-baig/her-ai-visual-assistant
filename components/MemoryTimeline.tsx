@@ -103,8 +103,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.12,
     shadowRadius: 6,
-    borderLeftWidth: 4,
-    borderLeftColor: "#0a7ea4",
   },
   memoryImage: {
     width: "100%",
