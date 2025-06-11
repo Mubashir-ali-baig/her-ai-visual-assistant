@@ -1,50 +1,172 @@
-# Welcome to your Expo app 👋
+# Her - Visual Assistant for the Visually Impaired
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+![Her Logo](assets/icon.png)
 
-## Get started
+Her is an innovative assistive application designed to empower visually impaired individuals by providing real-time environmental awareness and memory capture capabilities. Built with accessibility at its core, Her uses advanced AI and computer vision technologies to narrate surroundings and help users understand their environment.
 
-1. Install dependencies
+## 🌟 Features
 
-   ```bash
-   npm install
-   ```
+### Core Features
 
-2. Start the app
+- 📸 Real-time camera access with video recording and photo capture
+- 🎥 Customizable video recording with adjustable frame counts (1-10 frames)
+- 📱 Intuitive, accessibility-first user interface
+- ✋ Haptic feedback for enhanced user interaction
+- 💾 Memory storage and review system
 
-   ```bash
-   npx expo start
-   ```
+### Technical Features
 
-In the output, you'll find options to open the app in a
+- Built with Expo and React Native for cross-platform compatibility
+- Real-time camera processing using Expo Camera
+- Haptic feedback integration using Expo Haptics
+- Tab-based navigation system
+- Modal interactions for settings and preferences
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## 🚀 Getting Started
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+### Prerequisites
 
-## Get a fresh project
+- Node.js (v16 or higher)
+- npm or yarn
+- Expo CLI
+- iOS Simulator or Android Emulator (for development)
+- Physical device for testing camera features
 
-When you're ready, run:
+### Installation
+
+1. Clone the repository:
 
 ```bash
-npm run reset-project
+git clone https://github.com/yourusername/her.git
+cd her
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+2. Install dependencies:
 
-## Learn more
+```bash
+npm install
+# or
+yarn install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+3. Start the development server:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm start
+# or
+yarn start
+```
 
-## Join the community
+4. Run on your device:
 
-Join our community of developers creating universal apps.
+- Scan the QR code with Expo Go (Android) or Camera app (iOS)
+- Press 'i' for iOS simulator
+- Press 'a' for Android emulator
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## 🏗️ Project Structure
+
+```
+her/
+├── app/                    # Main application code
+│   ├── _layout.tsx        # Root layout component
+│   ├── index.tsx          # Entry point
+│   ├── video.tsx          # Video recording screen
+│   ├── photo.tsx          # Photo capture screen
+│   └── memories.tsx       # Memories review screen
+├── assets/                # Static assets
+│   ├── images/           # Image assets
+│   └── fonts/            # Font files
+├── components/           # Reusable components
+│   ├── Camera.tsx        # Camera component
+│   ├── FrameCounter.tsx  # Frame counter component
+│   └── MemoryCard.tsx    # Memory display component
+├── hooks/               # Custom React hooks
+├── utils/              # Utility functions
+├── constants/          # App constants
+└── types/             # TypeScript type definitions
+```
+
+## 🔧 Technical Implementation
+
+### Camera Integration
+
+- Uses Expo Camera for device camera access
+- Implements frame-by-frame video recording
+- Handles camera permissions and error states
+
+### Accessibility Features
+
+- Large, high-contrast UI elements
+- Haptic feedback for all interactions
+- Voice-over compatible interface
+- Screen reader optimization
+
+### State Management
+
+- React Context for global state
+- Local storage for memory persistence
+- Camera state management
+
+## 🎯 Future Development
+
+### Planned Features
+
+- Real-time AI-powered narration
+- Object recognition and description
+- Voice command integration
+- Offline mode support
+- Smart glasses compatibility
+- Pocket pin camera support
+
+### Technical Roadmap
+
+1. **Phase 1 (Current)**
+
+   - MVP implementation
+   - Basic camera functionality
+   - Core accessibility features
+
+2. **Phase 2 (Next 3-6 months)**
+
+   - AI integration
+   - Basic narration system
+   - Enhanced memory management
+
+3. **Phase 3 (6-12 months)**
+   - Advanced AI features
+   - Voice command system
+   - Expanded device support
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- Expo team for the amazing framework
+- React Native community
+- All our beta testers and contributors
+
+## 📞 Support
+
+For support, please:
+
+- Open an issue in the GitHub repository
+- Contact the development team at support@her-app.com
+- Join our community Discord server
+
+## 🔄 Updates
+
+Stay updated with our latest changes by:
+
+- Following our GitHub repository
+- Subscribing to our newsletter
+- Following our social media channels
+
+---
+
+Built with ❤️ for the visually impaired community
